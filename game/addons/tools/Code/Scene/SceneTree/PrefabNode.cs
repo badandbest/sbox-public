@@ -2,7 +2,7 @@
 
 namespace Editor;
 
-partial class PrefabNode : GameObjectNode
+partial class PrefabNode : SceneNode
 {
 	public PrefabNode( PrefabScene go ) : base( go )
 	{
