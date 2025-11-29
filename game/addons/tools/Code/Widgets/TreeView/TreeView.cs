@@ -248,6 +248,7 @@ public partial class TreeView : BaseItemWidget
 		item.Rect.Left += indent;
 		if ( node != null )
 		{
+			ItemPaint?.Invoke( item );
 			node.OnPaint( item );
 		}
 		else
