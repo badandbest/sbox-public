@@ -7,8 +7,9 @@ partial class GameObjectNode : TreeNode<GameObject>
 {
 	public GameObjectNode( GameObject o ) : base( o )
 	{
-		Height = 19;
 	}
+
+	public override float Height => 19;
 
 	public override string Name
 	{

@@ -10,7 +10,7 @@ public partial class TreeNode
 
 	public IEnumerable<TreeNode> Children => children;
 	public virtual bool HasChildren => children != null && children.Count > 0;
-	public float Height { get; set; }
+	public virtual float Height { get; set; }
 
 	public bool Enabled { get; set; } = true;
 
