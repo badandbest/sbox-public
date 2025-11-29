@@ -10,7 +10,6 @@ public partial class SceneTreeWidget : Widget
 	Layout Header;
 	Layout SubHeader;
 	LineEdit Search;
-	ToolButton SearchClear;
 
 	IDisposable _selectionUndoScope = null;
 
@@ -35,7 +34,9 @@ public partial class SceneTreeWidget : Widget
 		SubHeader.Margin = 2;
 		SubHeader.Alignment = TextFlag.LeftCenter;
 
-		var add = SubHeader.Add( new AddButton( "add" ) );
+		var add = SubHeader.Add( new IconButton( "add" ) );
+		add.Foreground = Theme.Primary;
+		add.Background = Theme.ControlBackground;
 		add.MouseLeftPress = CreateGameObjectMenu;
 
 		Search = SubHeader.Add( new LineEdit(), 1 );
@@ -43,28 +44,7 @@ public partial class SceneTreeWidget : Widget
 		Search.Layout = Layout.Row();
 		Search.Layout.AddStretchCell( 1 );
 		Search.TextChanged += x => queryDirty = true;
-		Search.FixedHeight = Theme.RowHeight;
-
-		SearchClear = Search.Layout.Add( new ToolButton( string.Empty, "clear", this ) );
-		SearchClear.MouseLeftPress = () =>
-		{
-			Search.Text = string.Empty;
-			Rebuild();
-
-			// make sure we're open to the stuff we picked from search
-			foreach ( var item in TreeView.Selection )
-			{
-				TreeView.ExpandPathTo( item );
-			}
-			TreeView.UpdateIfDirty();
-
-			var scrollTarget = TreeView.Selection.FirstOrDefault();
-			if ( scrollTarget is not null )
-			{
-				TreeView.ScrollTo( scrollTarget );
-			}
-		};
-		SearchClear.Visible = false;
+		Search.ClearButtonEnabled = true;
 
 		TreeView = new TreeView();
 		TreeView.MultiSelect = true;
@@ -164,7 +144,6 @@ public partial class SceneTreeWidget : Widget
 			return;
 
 		bool hasSearch = !string.IsNullOrEmpty( Search.Text );
-		SearchClear.Visible = hasSearch;
 
 		var scene = session.Scene;
 		if ( hasSearch )
@@ -261,46 +240,5 @@ public partial class SceneTreeWidget : Widget
 		{
 			TreeView.ScrollTo( scrollTarget );
 		}
-	}
-}
-
-file class AddButton : Widget
-{
-	public string Icon;
-
-	public AddButton( string icon ) : base( null )
-	{
-		Icon = icon;
-
-		Cursor = CursorShape.Finger;
-		FixedHeight = Theme.RowHeight;
-	}
-
-	protected override Vector2 SizeHint()
-	{
-		return new Vector2( Theme.RowHeight );
-	}
-
-	protected override void OnPaint()
-	{
-		Paint.ClearBrush();
-		Paint.ClearPen();
-
-		var color = Enabled ? Theme.ControlBackground : Theme.SurfaceBackground;
-
-		if ( Enabled && Paint.HasMouseOver )
-		{
-			color = color.Lighten( 0.1f );
-		}
-
-		Paint.ClearPen();
-		Paint.SetBrush( color );
-		Paint.DrawRect( LocalRect, Theme.ControlRadius );
-
-		Paint.ClearBrush();
-		Paint.ClearPen();
-		Paint.SetPen( Theme.Primary );
-
-		Paint.DrawIcon( LocalRect, Icon, 14, TextFlag.Center );
 	}
 }
