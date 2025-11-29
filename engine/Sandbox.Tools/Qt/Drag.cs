@@ -110,7 +110,7 @@ namespace Editor
 	/// <summary>
 	/// Contains drag and drop data for tool widgets. See <see cref="Widget.DragEvent"/>.
 	/// </summary>
-	public partial class DragData : QObject
+	public partial class DragData : QObject, IEnumerable<object>
 	{
 		internal static DragData Current { get; set; }
 		internal QMimeData _data;
@@ -246,38 +246,19 @@ namespace Editor
 			}
 		}
 
-		/// <summary>
-		/// Helper for finding instances of type <typeparamref name="T"/> in <see cref="Object"/>.
-		/// Will find matches if <see cref="Object"/> is of type <typeparamref name="T"/>, is
-		/// an <see cref="IEnumerable"/> with <typeparamref name="T"/> items, or a <see cref="SerializedObject"/>
-		/// with <typeparamref name="T"/> targets.
-		/// </summary>
-		public IEnumerable<T> OfType<T>()
+		public IEnumerator<object> GetEnumerator()
 		{
-			return Object switch
+			var items = Object switch
 			{
-				SerializedObject { Targets: { } targets } => targets.OfType<T>(),
-				IEnumerable enumerable => typeof( T ) == typeof( object ) ? enumerable.Cast<T>() : enumerable.OfType<T>(),
-				T value => new[] { value },
-				_ => Enumerable.Empty<T>()
+				SerializedObject { Targets: var targets } => targets,
+				IEnumerable enumerable => enumerable.Cast<object>(),
+				not null => [Object],
+				_ => []
 			};
+
+			return items.GetEnumerator();
 		}
 
-		/// <summary>
-		/// Helper for finding instances of type <paramref name="type"/> in <see cref="Object"/>.
-		/// Will find matches if <see cref="Object"/> is of type <paramref name="type"/>, is
-		/// an <see cref="IEnumerable"/> with <paramref name="type"/> items, or a <see cref="SerializedObject"/>
-		/// with <paramref name="type"/> targets.
-		/// </summary>
-		public IEnumerable<object> OfType( Type type )
-		{
-			return Object switch
-			{
-				SerializedObject { Targets: { } targets } => targets.Where( type.IsInstanceOfType ),
-				IEnumerable enumerable => type == typeof( object ) ? enumerable.Cast<object>() : enumerable.OfType<object>().Where( type.IsInstanceOfType ),
-				_ when type.IsInstanceOfType( Object ) => new[] { Object },
-				_ => Enumerable.Empty<object>()
-			};
-		}
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 	}
 }

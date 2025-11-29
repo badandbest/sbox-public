@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -53,5 +54,16 @@ public static partial class SandboxSystemExtensions
 		}
 
 		return typeof( object );
+	}
+
+	/// <summary>
+	/// Filters the elements of a sequence based on a specified type.
+	/// </summary>
+	/// <param name="source">The sequence to filter.</param>
+	/// <param name="type">The type to filter the elements of the sequence on.</param>
+	/// <returns>A sequence of only that type.</returns>
+	public static IEnumerable<object> OfType( this IEnumerable source, Type type )
+	{
+		return source.OfType<object>().Where( type.IsInstanceOfType );
 	}
 }
