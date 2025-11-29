@@ -67,6 +67,7 @@ public partial class SceneTreeWidget : Widget
 
 			return false;
 		};
+		TreeView.ItemPaint = PaintItemBackground;
 
 		Layout.Add( TreeView, 1 );
 
@@ -75,6 +76,26 @@ public partial class SceneTreeWidget : Widget
 
 		EditorUtility.OnInspect -= OnInspect;
 		EditorUtility.OnInspect += OnInspect;
+	}
+
+	void PaintItemBackground( VirtualWidget item )
+	{
+		var fullSpanRect = item.Rect with { Left = 0, Right = Width };
+
+		Paint.ClearPen();
+
+		if ( item.Selected )
+		{
+			Paint.SetBrush( Theme.Blue.WithAlpha( 0.1f ) );
+			Paint.DrawRect( fullSpanRect );
+			return;
+		}
+
+		if ( int.IsEvenInteger( item.Row ) )
+		{
+			Paint.SetBrush( Theme.SurfaceLightBackground.WithAlpha( 0.1f ) );
+			Paint.DrawRect( fullSpanRect );
+		}
 	}
 
 	void CreateGameObjectMenu()

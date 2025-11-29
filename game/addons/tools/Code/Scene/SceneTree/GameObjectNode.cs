@@ -52,8 +52,6 @@ partial class GameObjectNode : TreeNode<GameObject>
 		if ( !Value.Scene.IsValid() )
 			return;
 
-		var isEven = item.Row % 2 == 0;
-		var selected = item.Selected || item.Pressed || item.Dragging;
 		var isBone = Value.Flags.Contains( GameObjectFlags.Bone );
 		var isProceduralBone = Value.Flags.Contains( GameObjectFlags.ProceduralBone );
 		var isAttachment = Value.Flags.Contains( GameObjectFlags.Attachment );
@@ -207,20 +205,6 @@ partial class GameObjectNode : TreeNode<GameObject>
 				Paint.PenSize = 2;
 				Paint.DrawRect( item.Rect, 4 );
 			}
-		}
-
-		if ( selected )
-		{
-			//item.PaintBackground( Color.Transparent, 3 );
-			Paint.ClearPen();
-			Paint.SetBrush( Theme.Blue.WithAlpha( 0.1f * opacity ) );
-			Paint.DrawRect( fullSpanRect );
-		}
-		else if ( isEven )
-		{
-			Paint.ClearPen();
-			Paint.SetBrush( Theme.SurfaceLightBackground.WithAlpha( 0.1f ) );
-			Paint.DrawRect( fullSpanRect );
 		}
 
 		var name = Value.Name;
