@@ -4,7 +4,7 @@
 /// An interface for specifying how a custom type can be serialized and deserialized
 /// over the network with support for only sending changes.
 /// </summary>
-internal interface INetworkSerializer
+public interface INetworkSerializer
 {
 	/// <summary>
 	/// Write any changes to the <see cref="ByteStream"/>. This is only applicable if
