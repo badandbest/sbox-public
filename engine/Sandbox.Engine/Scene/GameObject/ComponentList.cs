@@ -93,6 +93,43 @@ public class ComponentList
 	}
 
 	/// <summary>
+	/// Add a component directly. Will remove the component from the old game object.
+	/// </summary>
+	public T Add<T>( T component ) where T : Component
+	{
+		if ( component == null )
+		{
+			throw new ArgumentException( "component is null" );
+		}
+
+		using var batch = CallbackBatch.Batch();
+
+		component.Components?.Remove( component );
+
+		component.GameObject = go;
+		_list.Add( component );
+
+		component.InitializeComponent();
+		go.OnComponentAdded( component );
+
+		return component;
+	}
+
+	/// <summary>
+	/// Remove given component from this game object.
+	/// </summary>
+	public bool Remove( Component component )
+	{
+		if ( _list.Remove( component ) )
+		{
+			go.OnComponentRemoved( component );
+			return true;
+		}
+
+		return false;
+	}
+
+	/// <summary>
 	/// Add a component of this type
 	/// </summary>
 	public Component Create( TypeDescription type, bool startEnabled = true )
