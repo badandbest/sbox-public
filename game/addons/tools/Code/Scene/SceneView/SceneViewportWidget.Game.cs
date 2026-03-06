@@ -15,13 +15,6 @@ public partial class SceneViewportWidget
 		Renderer.Scene = Session.Scene;
 		GizmoInstance.Selection = Session.Selection;
 
-		if ( _editorCamera.IsValid() && _editorCamera.Scene != Session.Scene )
-		{
-			// make sure the editor camera exists in the correct scene
-			_editorCamera.DestroyGameObject();
-			_editorCamera = Renderer.CreateSceneEditorCamera();
-		}
-
 		_activeCamera = viewMode switch
 		{
 			SceneViewWidget.ViewMode.Game => null,
