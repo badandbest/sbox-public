@@ -49,6 +49,7 @@ public static partial class Json
 		if ( typeLibrary is not null )
 		{
 			options.Converters.Add( new TypeConverter( new TypeLoader( () => typeLibrary ) ) );
+			options.Converters.Add( new ObjectConverter() );
 		}
 
 		options.AddActionGraphConverters( () =>
@@ -134,7 +135,7 @@ public static partial class Json
 	/// <summary>
 	/// Serialize an object.
 	/// </summary>
-	public static string Serialize( object source )
+	public static string Serialize<T>( T source )
 	{
 		if ( source == null )
 			return null;
@@ -238,7 +239,7 @@ public static partial class Json
 	/// <summary>
 	/// Serialize a single object to a JsonNode
 	/// </summary>
-	public static JsonNode ToNode( object obj )
+	public static JsonNode ToNode<T>( T obj )
 	{
 		return System.Text.Json.JsonSerializer.SerializeToNode( obj, options );
 	}
