@@ -248,7 +248,7 @@ public partial class Scene : GameObject
 			if ( prop.Name == "Name" ) continue;
 			if ( prop.Name == "Lerp" ) continue;
 
-			jso.Add( prop.Name, JsonValue.Create( prop.GetValue( this ) ) );
+			jso.Add( prop.Name, Json.ToNode( prop.GetValue( this ), prop.PropertyType ) );
 		}
 
 		jso.Add( "Metadata", SerializeMetadata() );
@@ -268,7 +268,7 @@ public partial class Scene : GameObject
 
 	JsonNode SerializeGameObjectSystems()
 	{
-		var systemsToSerialize = new Dictionary<string, Dictionary<string, object>>();
+		var systemsToSerialize = new JsonObject();
 
 		foreach ( var system in GetSystems() )
 		{
@@ -276,7 +276,7 @@ public partial class Scene : GameObject
 			if ( systemType is null ) continue;
 
 			var systemTypeName = systemType.FullName;
-			Dictionary<string, object> propertiesToSerialize = null;
+			var propertiesToSerialize = new JsonObject();
 
 			foreach ( var property in systemType.Properties.Where( x => x.HasAttribute<PropertyAttribute>() ) )
 			{
@@ -286,24 +286,24 @@ public partial class Scene : GameObject
 				var hasGlobalValue = ProjectSettings.Systems.TryGetPropertyValue( systemType, property, out var globalValue );
 				var compareValue = hasGlobalValue ? globalValue : property.GetCustomAttribute<DefaultValueAttribute>()?.Value;
 
-				var currentJson = JsonSerializer.SerializeToNode( currentValue, Json.options );
-				var compareJson = JsonSerializer.SerializeToNode( compareValue, Json.options );
+				var currentJson = Json.ToNode( currentValue, property.PropertyType );
+				var compareJson = Json.ToNode( compareValue, property.PropertyType );
 
 				// Is this slow?
 				if ( !JsonNode.DeepEquals( currentJson, compareJson ) )
 				{
-					propertiesToSerialize ??= new Dictionary<string, object>();
-					propertiesToSerialize[property.Name] = currentValue;
+					propertiesToSerialize ??= new JsonObject();
+					propertiesToSerialize[property.Name] = currentJson;
 				}
 			}
 
-			if ( propertiesToSerialize is not null )
+			if ( propertiesToSerialize.Count > 0 )
 			{
 				systemsToSerialize[systemTypeName] = propertiesToSerialize;
 			}
 		}
 
-		return systemsToSerialize.Any() ? JsonSerializer.SerializeToNode( systemsToSerialize, Json.options ) : null;
+		return systemsToSerialize.Any() ? systemsToSerialize : null;
 	}
 
 	JsonObject SerializeMetadata()
