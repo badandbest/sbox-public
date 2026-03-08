@@ -34,9 +34,9 @@ internal sealed class ProjectPage : ProjectSettingsWindow.Category
 		set
 		{
 			Properties.GameSupport = value;
-			Project.Config.Metadata["GameSupport"] = Properties.GameSupport
+			Project.Config.SetMeta( "GameSupport", Properties.GameSupport
 				.Replace( "#local", "" )
-				.Split( ';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries ).ToList();
+				.Split( ';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries ) );
 
 			StateHasChanged();
 		}
@@ -50,7 +50,7 @@ internal sealed class ProjectPage : ProjectSettingsWindow.Category
 		{
 			Properties.ParentGame = value;
 			HasChangedParentPackage = true;
-			Project.Config.Metadata["ParentPackage"] = Properties.ParentGame;
+			Project.Config.SetMeta( "ParentPackage", Properties.ParentGame );
 
 			StateHasChanged();
 		}
@@ -65,7 +65,7 @@ internal sealed class ProjectPage : ProjectSettingsWindow.Category
 			Properties.TargetGame = value;
 			HasChangedParentPackage = true;
 			// Further down references will always favour the local version
-			Project.Config.Metadata["ParentPackage"] = Properties.TargetGame.Replace( "#local", "" );
+			Project.Config.SetMeta( "ParentPackage", Properties.TargetGame.Replace( "#local", "" ) );
 
 			StateHasChanged();
 		}

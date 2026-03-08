@@ -55,7 +55,7 @@ internal sealed class CompilerCategory : ProjectSettingsWindow.Category
 
 	public string ProjectFilename
 	{
-		get => Project.Config.Metadata.TryGetValue( "CsProjName", out var value ) ? value.ToString() : default;
+		get => Project.Config.TryGetMeta( "CsProjName", out string value ) ? value : default;
 		set
 		{
 			Project.Config.Metadata["CsProjName"] = value;

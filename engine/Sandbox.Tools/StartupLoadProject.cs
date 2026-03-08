@@ -405,7 +405,7 @@ static class StartupLoadProject
 			FileSystem.ProjectSettings.WriteJson( "/Input.config", meta.Serialize() );
 		}
 
-		if ( project.Config.SetMeta( "InputSettings", null ) )
+		if ( project.Config.SetMeta<InputSettings>( "InputSettings", null ) )
 		{
 			project.Save();
 		}
@@ -420,7 +420,7 @@ static class StartupLoadProject
 			EditorUtility.SaveProjectSettings( meta, "/Collision.config" );
 		}
 
-		if ( project.Config.SetMeta( "Collision", null ) )
+		if ( project.Config.SetMeta<CollisionRules>( "Collision", null ) )
 		{
 			project.Save();
 		}

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Sandbox.DataModel;
@@ -128,7 +129,7 @@ public class ProjectConfig
 	/// Custom key-value storage for this project.
 	/// </summary>
 	[Hide]
-	public Dictionary<string, object> Metadata { get; set; } = new();
+	public JsonObject Metadata { get; set; } = new();
 
 	public override string ToString() => FullIdent;
 
@@ -190,25 +191,16 @@ public class ProjectConfig
 		if ( Metadata == null )
 			return false;
 
-		if ( !Metadata.TryGetValue( keyname, out var val ) )
+		if ( !Metadata.TryGetPropertyValue( keyname, out var val ) )
 			return false;
 
-		if ( val is T t )
+		try
 		{
-			outvalue = t;
-			return true;
+			outvalue = val.Deserialize<T>();
 		}
-
-		if ( val is JsonElement je )
+		catch ( System.Exception )
 		{
-			try
-			{
-				outvalue = je.Deserialize<T>( Json.options ) ?? default;
-			}
-			catch ( System.Exception )
-			{
-				return false;
-			}
+			return false;
 		}
 
 		return true;
@@ -222,27 +214,17 @@ public class ProjectConfig
 		if ( Metadata == null )
 			return defaultValue;
 
-		if ( !Metadata.TryGetValue( keyname, out var val ) )
+		if ( !Metadata.TryGetPropertyValue( keyname, out var val ) )
 			return defaultValue;
 
-		if ( val is T t )
+		try
 		{
-			return t;
+			return val.Deserialize<T>( Json.options ) ?? defaultValue;
 		}
-
-		if ( val is JsonElement je )
+		catch ( System.Exception )
 		{
-			try
-			{
-				return je.Deserialize<T>( Json.options ) ?? defaultValue;
-			}
-			catch ( System.Exception )
-			{
-				return defaultValue;
-			}
+			return defaultValue;
 		}
-
-		return defaultValue;
 	}
 
 	/// <summary>
@@ -251,9 +233,9 @@ public class ProjectConfig
 	/// <param name="keyname">The key for the data.</param>
 	/// <param name="outvalue">The data itself to store.</param>
 	/// <returns>Always true.</returns>
-	public bool SetMeta( string keyname, object outvalue )
+	public bool SetMeta<T>( string keyname, T outvalue )
 	{
-		Metadata ??= new Dictionary<string, object>();
+		Metadata ??= new JsonObject();
 
 		if ( outvalue is null )
 		{
@@ -261,7 +243,7 @@ public class ProjectConfig
 		}
 		else
 		{
-			Metadata[keyname] = outvalue;
+			Metadata[keyname] = Json.ToNode( outvalue ); ;
 		}
 
 
