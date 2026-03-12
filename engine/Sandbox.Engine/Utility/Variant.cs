@@ -94,104 +94,11 @@ public struct Variant : IJsonConvert, IEquatable<Variant>
 
 	public static object JsonRead( ref Utf8JsonReader reader, Type typeToConvert )
 	{
-		if ( reader.TokenType == JsonTokenType.Null )
-			return new Variant();
-
-		if ( reader.TokenType == JsonTokenType.String )
-		{
-			return new Variant { Value = reader.GetString() };
-		}
-
-		if ( reader.TokenType != JsonTokenType.StartObject )
-			throw new JsonException( "Variant JSON must be an object." );
-
-		// snapshot the reader at StartObject
-		var depth = reader.CurrentDepth;
-		var snapshot = reader;
-
-		// first pass: scan for "t" only
-		Type resolvedType = null;
-		while ( reader.Read() && reader.TokenType != JsonTokenType.EndObject )
-		{
-			if ( reader.TokenType == JsonTokenType.PropertyName && reader.GetString() == "t" )
-			{
-				reader.Read();
-				var typeDesc = Game.TypeLibrary.GetType( reader.GetString(), true );
-
-				if ( typeDesc is null )
-				{
-					throw new JsonException( "Unknown type in Variant JSON: " + reader.GetString() );
-				}
-
-				resolvedType = typeDesc?.TargetType;
-				break;
-			}
-			reader.Read();
-			reader.Skip();
-		}
-
-		if ( resolvedType == null )
-		{
-			// if we couldn't resolve the type, skip the value and return an empty Variant
-			while ( reader.TokenType != JsonTokenType.EndObject || reader.CurrentDepth != depth )
-				reader.Read();
-
-			return new Variant();
-		}
-
-		// second pass: rewind, parse "v" with the type known
-		reader = snapshot;
-		object resolvedValue = null;
-		while ( reader.Read() && reader.TokenType != JsonTokenType.EndObject )
-		{
-			if ( reader.TokenType == JsonTokenType.PropertyName && reader.GetString() == "v" )
-			{
-				reader.Read();
-				if ( resolvedType != null )
-					resolvedValue = Json.Deserialize( ref reader, resolvedType );
-				else
-					reader.Skip();
-				break;
-			}
-			reader.Read();
-			reader.Skip();
-		}
-
-		// consume to end of outer object
-		while ( reader.TokenType != JsonTokenType.EndObject || reader.CurrentDepth != depth )
-			reader.Read();
-
-		return new Variant { Value = resolvedValue, Type = resolvedType };
+		return new Variant( Json.Deserialize<object>( ref reader ) );
 	}
 
 	public static void JsonWrite( object value, Utf8JsonWriter writer )
 	{
-		var v = (Variant)value;
-		var t = v.Type;
-
-		if ( t == null )
-		{
-			writer.WriteNullValue();
-			return;
-		}
-
-		if ( v.Value is string str )
-		{
-			writer.WriteStringValue( str );
-			return;
-		}
-
-		writer.WriteStartObject();
-		{
-			{
-				writer.WriteString( "t", t.FullName );
-			}
-
-			{
-				writer.WritePropertyName( "v" );
-				Json.Serialize( writer, v.Value ); // calls JsonSerializer.Serialize under the hood
-			}
-		}
-		writer.WriteEndObject();
+		Json.Serialize( writer, ((Variant)value).Value );
 	}
 }
