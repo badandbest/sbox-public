@@ -15,6 +15,7 @@ public sealed partial class Project
 		if ( Config.Type == "tool" ) return true;
 		if ( Config.Type == "library" ) return true;
 		if ( Config.Type == "addon" ) return true;
+		if ( Config.Type == "generator" ) return true;
 
 		return false;
 	}
@@ -144,6 +145,16 @@ public sealed partial class Project
 				if ( editorProject is not null )
 					testProject.PackageReferences.Add( editorProject.Name );
 			}
+
+			//
+			// Genereator project
+			//
+			var generatorProject = AddGeneratorProjectFrom( projectName, generator );
+			if ( generatorProject is not null )
+			{
+				generatorProject.Folder = projectFolder;
+				generatorProject.SandboxProjectFilePath = ConfigFilePath;
+			}
 		}
 	}
 
@@ -218,6 +229,24 @@ public sealed partial class Project
 		return project;
 	}
 
+	ProjectInfo AddGeneratorProjectFrom( string projectName, Sandbox.SolutionGenerator.Generator generator )
+	{
+		if ( !HasGeneratorPath() )
+			return default;
+
+		var compilerSettings = Config.GetCompileSettings();
+		var project = generator.AddProject( "generator", $"{Config.FullIdent}.generator", $"{projectName}.generator", GetGeneratorPath(), compilerSettings );
+		project.IsGeneratorProject = true;
+
+		//
+		// Only include Generator reference
+		//
+		project.References.Clear();
+		project.AddGeneratorAssemblyReferences();
+
+		return project;
+	}
+
 	ProjectInfo AddEditorProjectFrom( string projectName, Sandbox.SolutionGenerator.Generator generator )
 	{
 		if ( !HasEditorPath() )
@@ -283,6 +312,17 @@ file static class ProjectExtensions
 {
 	extension( ProjectInfo project )
 	{
+		/// <summary>
+		/// Add references to non-package assemblies needed by generator packages.
+		/// </summary>
+		public void AddGeneratorAssemblyReferences()
+		{
+			project.References.Clear();
+			project.References.Add( "Sandbox.Generator.dll" );
+			project.References.Add( "Microsoft.CodeAnalysis.dll" );
+			project.References.Add( "Microsoft.CodeAnalysis.CSharp.dll" );
+		}
+
 		/// <summary>
 		/// Add references to non-package assemblies needed by tools / editor packages.
 		/// </summary>

@@ -196,6 +196,16 @@ public sealed partial class Project
 	public bool HasEditorPath() => RootDirectory is not null && System.IO.Directory.Exists( GetEditorPath() );
 
 	/// <summary>
+	/// Absolute path to the Generator folder of the project.
+	/// </summary>
+	public string GetGeneratorPath() => System.IO.Path.Combine( GetRootPath(), "Generator" );
+
+	/// <summary>
+	/// Returns true if the Generator path exists
+	/// </summary>
+	public bool HasGeneratorPath() => RootDirectory is not null && System.IO.Directory.Exists( GetGeneratorPath() );
+
+	/// <summary>
 	/// Absolute path to the Assets folder of the project, or <see langword="null"/> if not set.
 	/// </summary>
 	public string GetAssetsPath() => System.IO.Path.Combine( RootDirectory.FullName, "Assets" );

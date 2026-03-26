@@ -13,6 +13,7 @@ public class ProjectInfo
 	public string Guid { get; set; }
 	public bool IsEditorProject { get; set; }
 	public bool IsUnitTestProject { get; set; }
+	public bool IsGeneratorProject { get; set; }
 	public string SandboxProjectFilePath { get; set; }
 	public Compiler.Configuration Settings { get; set; }
 

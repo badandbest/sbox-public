@@ -10,13 +10,16 @@ public partial class Project
 	/// Whether the project's code has a compiler assigned.
 	/// </summary>
 	[JsonIgnore]
-	public bool HasCompiler => Compiler is not null || EditorCompiler is not null;
+	public bool HasCompiler => Compiler is not null || EditorCompiler is not null || GeneratorCompiler is not null;
 
 	[JsonIgnore]
 	internal Compiler Compiler { get; private set; }
 
 	[JsonIgnore]
 	internal Compiler EditorCompiler { get; private set; }
+
+	[JsonIgnore]
+	internal Compiler GeneratorCompiler { get; private set; }
 
 	int lastCompilerHash;
 
@@ -44,6 +47,11 @@ public partial class Project
 
 		if ( !Active )
 			return;
+
+		if ( Config.Type == "game" || Config.Type == "library" || Config.Type == "addon" )
+		{
+			UpdateGeneratorCompiler();
+		}
 
 		if ( HasCodePath() )
 		{
@@ -244,6 +252,34 @@ public partial class Project
 		}
 
 		EditorCompiler.WatchForChanges();
+	}
+
+	/// <summary>
+	/// If required, create the editor compiler
+	/// </summary>
+	void UpdateGeneratorCompiler()
+	{
+		GeneratorCompiler?.Dispose();
+		GeneratorCompiler = null;
+
+		if ( !Active )
+			return;
+
+		if ( !HasGeneratorPath() )
+			return;
+
+		var compilerSettings = Config.GetCompileSettings();
+		var compilerName = $"{Config.Org}.{Config.Ident}".Trim( '.' ) + ".generator";
+
+		Log.Trace( $"Create Generator Compiler `{compilerName}`" );
+
+		GeneratorCompiler = CompileGroup.CreateCompiler( compilerName, GetGeneratorPath(), compilerSettings );
+
+		GeneratorCompiler.AddReference( "Sandbox.Generator" );
+		GeneratorCompiler.AddReference( "Microsoft.CodeAnalysis" );
+		GeneratorCompiler.AddReference( "Microsoft.CodeAnalysis.CSharp" );
+
+		GeneratorCompiler.WatchForChanges();
 	}
 
 	internal static async Task<bool> CompileAsync()
